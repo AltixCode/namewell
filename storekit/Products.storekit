@@ -1,0 +1,35 @@
+{
+  "identifier": "ED4E5B00-C92B-4DAF-A573-71FB2DD24B04",
+  "nonRenewingSubscriptions": [],
+  "products": [
+    {
+      "displayPrice": "4.99",
+      "familyShareable": false,
+      "internalID": "DE2635EA-5439-4F29-857B-9B699D941BC9",
+      "localizations": [
+        {
+          "description": "namewell remove ads lifetime unlock",
+          "displayName": "namewell remove ads",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.altixcode.namewell.removeads",
+      "referenceName": "namewell remove ads",
+      "type": "NonConsumable"
+    }
+  ],
+  "settings": {
+    "_applicationInternalID": "",
+    "_developerTeamID": "",
+    "_failTransactionsEnabled": false,
+    "_lastSynchronizedDate": 0,
+    "_locale": "en_US",
+    "_storefront": "USA",
+    "_storeKitErrors": []
+  },
+  "subscriptionGroups": [],
+  "version": {
+    "major": 4,
+    "minor": 0
+  }
+}
