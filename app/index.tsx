@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { BannerAdSlot } from "@/components/BannerAdSlot";
@@ -9,6 +9,7 @@ import { t, type TranslationKey } from "@/i18n";
 import { type Gender, filterNames, syllablesForEntry } from "@/logic/names";
 import { syllablesOf } from "@/logic/sound";
 import { FREE_SHORTLIST, useShortlistStore } from "@/store/useShortlistStore";
+import { useNamePoolStore } from "@/store/useNamePoolStore";
 import { usePremiumStore } from "@/store/usePremiumStore";
 import { useTheme } from "@/theme";
 
@@ -29,13 +30,19 @@ export default function Browse() {
   const shortlist = useShortlistStore((s) => s.shortlist);
   const add = useShortlistStore((s) => s.add);
   const remove = useShortlistStore((s) => s.remove);
+  const names = useNamePoolStore((s) => s.names);
+  const refreshNames = useNamePoolStore((s) => s.refresh);
 
   const [query, setQuery] = useState("");
   const [gender, setGender] = useState<Gender | "all">("all");
 
+  useEffect(() => {
+    void refreshNames();
+  }, [refreshNames]);
+
   const results = useMemo(
-    () => filterNames({ query, gender }, syllablesOf),
-    [query, gender],
+    () => filterNames({ query, gender }, syllablesOf, names),
+    [query, gender, names],
   );
   const listed = useMemo(
     () => new Set(shortlist.map((n) => n.toLowerCase())),

@@ -437,12 +437,16 @@ export interface Filter {
   syllables?: number;
 }
 
-/** Applied in a fixed order so the result is predictable. Absent fields are not filters. */
+/** Applied in a fixed order so the result is predictable. Absent fields are not filters.
+ * `pool` defaults to the bundled `NAMES` but accepts any list with the same
+ * shape — the content-drip sync layer passes the service's current pool here
+ * once it has one, without this function needing to know that service exists. */
 export function filterNames(
   filter: Filter,
   syllablesOf: (name: string) => number,
+  pool: NameEntry[] = NAMES,
 ): NameEntry[] {
-  return NAMES.filter((entry) => {
+  return pool.filter((entry) => {
     if (
       filter.gender &&
       filter.gender !== "all" &&
@@ -463,7 +467,10 @@ export function filterNames(
     ) {
       return false;
     }
-    if (filter.syllables && syllablesForEntry(entry, syllablesOf) !== filter.syllables)
+    if (
+      filter.syllables &&
+      syllablesForEntry(entry, syllablesOf) !== filter.syllables
+    )
       return false;
     return true;
   });
