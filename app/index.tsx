@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { BannerAdSlot } from "@/components/BannerAdSlot";
-import { Button, Screen, Text } from "@/components/ui";
+import { Button, IconButton, Screen, Text } from "@/components/ui";
 import { t, type TranslationKey } from "@/i18n";
 import { type Gender, filterNames, syllablesForEntry } from "@/logic/names";
 import { syllablesOf } from "@/logic/sound";
@@ -85,11 +85,23 @@ export default function Browse() {
                   })}
             </Text>
           </View>
-          <Button
-            label={t("compareTitle")}
-            variant="ghost"
-            onPress={() => router.push("/compare")}
-          />
+          <View style={{ flexDirection: "row", gap: spacing.xs }}>
+            {/* A tester who wants to buy could previously only reach the paywall via
+                Settings, at the very bottom of the screen, or by first hitting the free
+                shortlist limit -- not obvious for someone who already knows they want it. */}
+            {!isPremium ? (
+              <Button
+                label={t("proButtonLabel")}
+                variant="ghost"
+                onPress={() => router.push("/paywall")}
+              />
+            ) : null}
+            <Button
+              label={t("compareTitle")}
+              variant="ghost"
+              onPress={() => router.push("/compare")}
+            />
+          </View>
         </View>
 
         <TextInput
@@ -136,14 +148,64 @@ export default function Browse() {
           ))}
         </View>
 
+        {/* A tester asked for exactly this: nowhere in the app could a saved name be removed
+            except by re-finding it in the search results below -- which a custom name typed in
+            via "Add '...' to your list" (further down) would never appear in again, since it
+            is not part of the curated pool. This is the one place every shortlisted name,
+            pool-drawn or custom, can be seen and removed. */}
+        {shortlist.length > 0 ? (
+          <View style={{ marginTop: spacing.lg }}>
+            <Text variant="micro" tone="faint">
+              {t("yourShortlistTitle").toUpperCase()}
+            </Text>
+            <View
+              style={[styles.chips, { gap: spacing.sm, marginTop: spacing.sm }]}
+            >
+              {shortlist.map((name) => (
+                <View
+                  key={name}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    minHeight: MIN_TOUCH_TARGET,
+                    paddingLeft: spacing.base,
+                    paddingRight: spacing.xs,
+                    borderRadius: radius.full,
+                    backgroundColor: colors.surfaceAlt,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <Text variant="caption">{name}</Text>
+                  <IconButton
+                    icon="x"
+                    size={14}
+                    accessibilityLabel={t("removeFromShortlist", { name })}
+                    onPress={() => remove(name)}
+                    style={{ marginLeft: spacing.xs }}
+                  />
+                </View>
+              ))}
+            </View>
+          </View>
+        ) : null}
+
         {results.length === 0 ? (
-          <Text
-            variant="caption"
-            tone="muted"
-            style={{ marginTop: spacing.lg }}
-          >
-            {t("noResults")}
-          </Text>
+          <View style={{ marginTop: spacing.lg, gap: spacing.sm }}>
+            <Text variant="caption" tone="muted">
+              {t("noResults")}
+            </Text>
+            {/* A tester asked for exactly this: a name of their own that isn't in the curated
+                pool. The shortlist already accepts any string (see `add`, above) -- the pool
+                search was the only thing standing between typing a name and keeping it. */}
+            {query.trim().length > 0 ? (
+              <Button
+                label={t("addCustomName", { name: query.trim() })}
+                variant="secondary"
+                onPress={() => toggle(query.trim())}
+              />
+            ) : null}
+          </View>
         ) : (
           results.map((entry) => {
             const saved = listed.has(entry.name.toLowerCase());

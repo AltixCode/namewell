@@ -1,11 +1,11 @@
 import * as Clipboard from "expo-clipboard";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
 
 import { BannerAdSlot } from "@/components/BannerAdSlot";
 import { Button, Screen, Text } from "@/components/ui";
 import { t } from "@/i18n";
-import { siblingFit } from "@/logic/sound";
+import { encodeShortlist, siblingFit } from "@/logic/sound";
 import { useShortlistStore } from "@/store/useShortlistStore";
 import { useTheme } from "@/theme";
 
@@ -31,6 +31,22 @@ export default function Compare() {
   const [code, setCode] = useState("");
   const [sibling, setSibling] = useState("");
 
+  // The pasted code lives only in this screen's local state, but the partner list it decoded
+  // into is persisted (`partner`, above). Leaving the screen to add names elsewhere and coming
+  // back remounts this component, resetting `code` to "" while `partner` -- and the "you both
+  // like" results computed live from it -- survives untouched. That mismatch is exactly what
+  // was reported: the code field reads as empty while the agreed list still shows, as if the
+  // comparison had half-forgotten itself. Re-deriving a code from the still-persisted partner
+  // list, once, the first time it's available, keeps the two in view together. Guarded by a
+  // ref rather than "code === ''" so a user who deliberately clears the field to retype is
+  // never fought by this effect re-populating it.
+  const resynced = useRef(false);
+  useEffect(() => {
+    if (resynced.current || partner.length === 0) return;
+    resynced.current = true;
+    setCode(encodeShortlist(partner));
+  }, [partner]);
+
   const copy = useCallback(() => {
     if (!myCode) return;
     void Clipboard.setStringAsync(myCode);
@@ -48,7 +64,6 @@ export default function Compare() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Screen scroll>
-
         <Text variant="micro" tone="faint" style={{ marginTop: spacing.lg }}>
           {t("myCodeLabel").toUpperCase()}
         </Text>
